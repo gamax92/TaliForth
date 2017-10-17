@@ -45,7 +45,7 @@
 ; RAM required is TODO kb
 
 .alias RamStart         $0000   ; must include Zero Page and Stack
-.alias RamSize          $7FFF   ; default $8000 for 32 kb x 8 bit RAM
+.alias RamSize          $9FFF   ; default $A000 for 40 kb x 8 bit RAM
 .alias RamEnd           [RamStart + RamSize]     
 .alias PadOffset        $FF     ; Distance between Pad area and CP 
 
@@ -112,9 +112,9 @@
 ; a break in the dictionary's link structure, this makes it easier to find it. 
 ; Note that the last entry in the dictionary should always be BYE for the 
 ; same reason
-.alias  TIB     $0200    ; Terminal Input Buffer, $400 to $4FF
-.alias  SYSPAD  $0300    ; System scratch pad 
-.alias  CP0     $0400    ; Start of free RAM (Compiler Pointer)
+.alias  TIB     $2600    ; Terminal Input Buffer, $400 to $4FF
+.alias  SYSPAD  $2700    ; System scratch pad 
+.alias  CP0     $2800    ; Start of free RAM (Compiler Pointer)
 .alias  DP0     l_words  ; First entry in the dictionary at start
 
 ; -----------------------------------------------------------------------------
@@ -571,30 +571,8 @@ f_nib2asc:
 ; If this gets any larger than three channels, consider making this a table.
 ; TODO test VIA routines
 .scope
-f_putchr:       phy
-                ldy OUTPORT
-                bne _c1
-
-                ; PORT 0: DEFAULT, Terminal, ASCI 
-                ply
+f_putchr:
                 jmp k_wrtchr    ; JSR/RTS
-
-_c1:            dey
-                bne _c2
-
-                ; PORT 1: VIA Port A output
-                ply
-                jmp k_wrtchrVIAa        ; JSR/RTS
-
-_c2:            dey
-                bne _err
-
-                ; PORT 2: VIA Port B output
-                ply
-                jmp k_wrtchrVIAb        ; JSR/RTS
-
-_err:           lda #$08        ; string code for unknown channel 
-                jmp error
 .scend
 ; -----------------------------------------------------------------------------
 ; PRINT ZERO-TERMINATED STRING TO CURRENT PORT. Used internally to print
@@ -625,9 +603,12 @@ _common:        phy
                 bra -
                 
 _linefeed:      ; get flag to see if we print a final linefeed or not 
-                lda #AscLF
                 ply
-                bne f_putchr    ; JSR/RTS
+                beq _done
+                lda #AscCR
+                jsr f_putchr
+                lda #AscLF
+                jsr f_putchr
 
 _done:          rts
 .scend
@@ -637,30 +618,8 @@ _done:          rts
 ; If this gets any larger than three ports , consider making this a table.
 ; TODO test VIA routines
 .scope
-f_getchr:       phy
-                ldy INPORT
-                bne _c1
-
-                ; PORT 0: DEFAULT, Terminal, ASCI 
-                ply
+f_getchr:
                 jmp k_getchr    ; JSR/RTS
-
-_c1:            dey             ; if 1 this turns to 0
-                bne _c2
-
-                ; PORT 1: VIA Port A input
-                ply
-                jmp k_getchrVIAa        ; JSR/RTS
-
-_c2:            dey
-                bne _err
-
-                ; PORT 2: VIA Port B input
-                ply
-                jmp k_getchrVIAb        ; JSR/RTS
-
-_err:           lda #$08        ; string code for wrong channel
-                jmp error       ; JSR/RTS
 .scend
 ; -----------------------------------------------------------------------------
 ; COMPARE TOS/NOS and return results in form of the 65c02 flags
@@ -2263,7 +2222,9 @@ l_cr:           bra a_cr
                 .word z_cr
                 .byte "CR"
 
-a_cr:           lda #AscLF      ; Line Feed 
+a_cr:           lda #AscCR      ; Carriage Return 
+                jsr f_putchr
+                lda #AscLF      ; Line Feed 
                 jsr f_putchr
 
 z_cr:           rts

@@ -14,7 +14,7 @@
 ; at $c000 of ROM. If we don't use this much space, change this to 8 kb 
 ; ($e000). Note that we can run into trouble with the py65 emulator in this 
 ; case because it hard-codes the input/output addresses to $f001
-.org $c000
+.org $0200
 
 ; =============================================================================
 ; FORTH CODE 
@@ -31,11 +31,11 @@ FORTH:
 
 ; =============================================================================
 ; INTERRUPT VECTORS
-.advance $FFFA  ; fill with zeros so we get a complete ROM image. 
+;.advance $FFFA  ; fill with zeros so we get a complete ROM image. 
 
-.word k_nmiv    ; NMI vector 
-.word k_resetv  ; RESET vector
-.word k_irqv    ; IRQ vector 
+;.word k_nmiv    ; NMI vector 
+;.word k_resetv  ; RESET vector
+;.word k_irqv    ; IRQ vector 
 
 ; =============================================================================
 ; END

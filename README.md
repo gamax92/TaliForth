@@ -12,6 +12,8 @@ is hosted at GitHub, you can find the most current version at
 
 ## Introduction
 
+This copy of Tali Forth is modified to run on the Thistle computer
+
 Tali Forth is a Subroutine Threaded Code (STC) implementation for the 65c02 closely modeled on the ANS Forth standard. I wrote it because I wanted to understand the inner workings of Forth and have a modern implementation of the language for my 65c02 single board computer, the [Übersquirrel](http://uebersquirrel.blogspot.de/). It is released in the public domain with no warranty of any kind -- use at your own risk. See COPYING.txt for details.
 
 Tali Forth aims to be, in rough order of priority: 
